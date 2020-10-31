@@ -1,0 +1,29 @@
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+
+using namespace cv;
+
+int main()
+{
+	// 1.加载原图像
+	Mat srcImage, dstImage;
+	srcImage = imread("C:/Users/lenvo/Desktop/background/10.jpg", 100);
+	if (!srcImage.data)
+	{
+		printf("读取图片错误！");
+		return false;
+	}
+
+	// 2.转化为灰度图并显示出来
+	cvtColor(srcImage, srcImage, COLOR_BGR2GRAY);
+	imshow("原始图", srcImage);
+
+	// 3.进行直方图均衡化
+	equalizeHist(srcImage, dstImage);
+
+	// 4.显示结果
+	imshow("经过直方图均衡化后的图", dstImage);
+
+	waitKey(0);
+	return 0;
+}

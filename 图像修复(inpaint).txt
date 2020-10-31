@@ -1,0 +1,76 @@
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/photo/photo.hpp>
+#include <iostream>
+
+using namespace std;
+using namespace cv;
+
+#define WINDOW_NAME1 "【原始图】"
+#define WINDOW_NAME2 "【修补后的效果图】"
+
+Mat srcImage1, inpaintMask;
+Point previousPoint(-1, -1);  // 原来的点坐标
+
+static void on_Mouse(int event, int x, int y, int flags, void*)
+{
+	// 鼠标左键弹起消息
+	if (event == EVENT_LBUTTONUP || !(flags & EVENT_FLAG_LBUTTON))
+		previousPoint = Point(-1, -1);
+	// 鼠标左键按下消息
+	else if (event == EVENT_LBUTTONDOWN)
+		previousPoint = Point(x, y);
+	// 鼠标按下并移动
+	else if (event == EVENT_MOUSEMOVE && (flags & EVENT_FLAG_LBUTTON))
+	{
+		Point pt(x, y);
+		if (previousPoint.x < 0)
+			previousPoint = pt;
+		// 绘制白色线条
+		line(inpaintMask, previousPoint, pt, Scalar::all(255), 5, 8, 0);
+		line(srcImage1, previousPoint, pt, Scalar::all(255), 5, 8, 0);
+		previousPoint = pt;
+		imshow(WINDOW_NAME1, srcImage1);
+	}
+}
+
+int main(int argc, char** argv)
+{
+	cout << "【鼠标左键】- 在图像上绘制白色线条" << endl;
+	cout << "键盘按键【ESC】- 退出程序" << endl;
+	cout << "键盘按键【1】- 进行图像修复操作" << endl;
+	cout << "键盘按键【2】- 图像恢复原图" << endl;
+	Mat srcImage = imread("C:/Users/lenvo/Desktop/background/5.jpg", 100);
+	if (!srcImage.data)
+	{
+		cerr << "载入图片错误！";
+		exit(0);
+	}
+	srcImage1 = srcImage.clone();
+	inpaintMask = Mat::zeros(srcImage1.size(), CV_8U);
+	imshow(WINDOW_NAME1, srcImage1);
+	setMouseCallback(WINDOW_NAME1, on_Mouse, 0);
+
+	while (1)
+	{
+		char c = (char)waitKey();
+
+		// 键值为ESC退出
+		if (c == 27)
+			break;
+		// 键值为2恢复原始图像
+		if (c == '2')
+		{
+			inpaintMask = Scalar::all(0);
+			srcImage.copyTo(srcImage1);
+		}
+		// 键值为1进行图像修补
+		if (c == '1')
+		{
+			Mat inpaintedImage;
+			inpaint(srcImage1, inpaintMask, inpaintedImage, 3, INPAINT_TELEA);
+			imshow(WINDOW_NAME2, inpaintedImage);
+		}
+	}
+	return 0;
+}

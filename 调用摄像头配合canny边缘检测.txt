@@ -1,0 +1,26 @@
+#include <opencv2/opencv.hpp>
+
+using namespace cv;
+
+int main()
+{
+	VideoCapture  capture(1);
+	Mat edges;
+	while (1)
+	{
+		Mat frame;  // 定义一个Mat变量，用于存储每一帧的图像
+		capture >> frame;  // 读取当前帧
+
+		// 将原图像转换为灰度图像
+		cvtColor(frame, edges, COLOR_BGR2GRAY);
+
+		// 使用3×3内核降噪(2×3+1=7）
+		blur(edges, edges, Size(7, 7));
+
+		// 进行Canny边缘检测并显示
+		Canny(edges, edges, 0, 30, 3);
+		imshow("读取视频", edges);  // 显示当前帧
+		if (waitKey(30) >= 0) break;  // 延时30ms
+	}
+	return 0;
+}

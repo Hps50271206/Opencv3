@@ -1,0 +1,30 @@
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+
+using namespace cv;
+
+int main()
+{
+	Mat image = imread("C:/Users/lenvo/Desktop/background/1.jpg");
+	Mat logo = imread("C:/Users/lenvo/Desktop/background/timg.jpg");
+	namedWindow("原图");
+	imshow("原图", image);
+
+	namedWindow("logo图");
+	imshow("logo图", logo);
+
+	Mat imageROI;
+	// 法一
+	imageROI = image(Rect(800, 350, logo.cols, logo.rows));  // Rect的四个参数分别为(x坐标, y坐标, width, height)  用image来初始化imageROI
+	// 法二
+	// imageROI = image(Range(350, 350 + logo.rows), Range(800, 800 + logo.cols));
+
+	// 将logo加到原图上
+	// 参数分别为(需要加权的1数组，1数组的权重，需要加权的2数组，2数组的权重，一个加到权重总和上的标量值， 输出的数组（和输入的两个数组有相同尺寸和通道数）)
+	addWeighted(imageROI, 0.5, logo, 0.3, 0.9, imageROI); 
+	namedWindow("混合后");
+	imshow("混合后", image);
+
+	waitKey(0);
+	return 0;
+}

@@ -1,0 +1,121 @@
+#include <opencv2/opencv.hpp>
+#include "opencv2/imgproc/imgproc.hpp"
+#include <iostream>
+
+using namespace std;
+using namespace cv;
+
+bool ROI_AddImage();
+bool LinearBlending();
+bool ROI_LinearBlending();
+
+int main()
+{
+	system("color 5E");  // 背景色为紫色，前景色为淡黄色(数字为背景色，字母为前景色)
+	if (ROI_AddImage() && LinearBlending() && ROI_LinearBlending())
+	{
+		cout << endl << "运行成功，得出了你需要的图像";
+	}
+
+	waitKey(0);
+	return 0;
+}
+
+bool ROI_AddImage()  // 利用ROI实现图像叠加
+{
+	// 1.输入图像
+	Mat srcImage1 = imread("C:/Users/lenvo/Desktop/background/5.jpg", 100);
+	Mat logoImage = imread("C:/Users/lenvo/Desktop/background/timg.jpg", 100);
+	if (!srcImage1.data) {
+		printf("读取srcImage1错误!");
+		return false;
+	}
+	if (!logoImage.data) {
+		printf("读取logoImage错误!");
+		return false;
+	}
+
+	// 2.定义一个Mat类型并给其设定ROI区域
+	Mat imageROI = srcImage1(Rect(200, 250, logoImage.cols, logoImage.rows));
+
+	// 3.加载掩膜(必须是灰度图)
+	Mat mask = imread("", 0);
+
+	// 4.将掩膜复制到ROI
+	logoImage.copyTo(imageROI, mask);  // 原图与掩膜进行运算后得到结果图
+
+	// 5.显示结果
+	namedWindow("利用ROI实现图像叠加示例窗口");
+	imshow("利用ROI实现图像叠加示例窗口", srcImage1);
+
+	return true;
+}
+
+bool LinearBlending()  // 利用addWeighted()函数实现图像线性混合
+{
+	// 1.定义一些局部变量
+	double alphaValue = 0.5;
+	double betaValue;
+	Mat srcImage2, srcImage3, dstImage;
+
+	// 2.读取图像
+	srcImage2 = imread("C:/Users/lenvo/Desktop/background/5.jpg", 100);
+	srcImage3 = imread("C:/Users/lenvo/Desktop/background/6.jpg", 100);
+
+	if (!srcImage2.data)
+	{
+		printf("读取srcImage2错误!");
+		return false;
+	}
+	if (!srcImage3.data)
+	{
+		printf("读取srcImage3错误!");
+		return false;
+	}
+
+	// 3.进行图像混合加权操作
+	betaValue = (1.0 - alphaValue);
+	addWeighted(srcImage2, alphaValue, srcImage3, betaValue, 0.0, dstImage);
+
+	// 4.创建并显示原图窗口
+	namedWindow("线性混合示例窗口【原图】");
+	imshow("线性混合示例窗口【原图】", srcImage2);
+
+	namedWindow("线性混合示例窗口【效果图】");
+	imshow("线性混合示例窗口【效果图】", dstImage);
+
+	return true;
+}
+
+bool ROI_LinearBlending()  // 实现自定义区域的线性混合
+{
+	// 1.读取图像
+	Mat srcImage4 = imread("C:/Users/lenvo/Desktop/background/5.jpg", 100);
+	Mat logoImage = imread("C:/Users/lenvo/Desktop/background/timg.jpg", 100);
+
+	if (!srcImage4.data)
+	{
+		printf("读取srcImage4错误!");
+		return false;
+	}
+	if (!logoImage.data)
+	{
+		printf("读取logoImage错误!");
+		return false;
+	}
+
+	// 2.定义一个Mat类型并给其设定ROI区域
+	// 法一
+	Mat imageROI = srcImage4(Rect(200, 250, logoImage.cols, logoImage.rows));
+	// 法二
+	// Mat imagROI = srcImage4(Range(250, 250 + logoImage.rows), Range(200, 200 + logoImage.cols));  左闭合右开，起始索引到终止索引
+
+	// 3.将logo加到原图上
+	addWeighted(imageROI, 0.5, logoImage, 0.3, 0.0, imageROI);
+
+	// 4.显示结果
+	namedWindow("区域线性图像混合示例窗口");
+	imshow("区域线性图像混合示例窗口", srcImage4);
+
+	return true;
+}

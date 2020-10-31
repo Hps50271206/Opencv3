@@ -1,0 +1,43 @@
+#include <opencv2/opencv.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+
+using namespace cv;
+
+int main()
+{
+	Mat src = imread("C:/Users/lenvo/Desktop/background/5.jpg", 199);
+	Mat src1 = src.clone();
+
+	// 显示原始图
+	imshow("【原始图边缘检测】", src);
+
+	// 高阶的canny用法，转成灰度图，降噪，用canny，最后将得到的边缘作为掩码(抠出指定区域)，拷贝原图到效果图上，得到彩色的边缘图
+	Mat dst, edge, gray;
+
+	// 1.创建于src同类型和大小的矩阵
+	dst.create(src1.size(), src1.type());
+
+	// 2.将原图像转换为灰度图像
+	cvtColor(src1, gray, COLOR_BGR2GRAY);
+
+	// 3.使用3×3内核来降噪(均值滤波)
+	blur(gray, edge, Size(3, 3));
+
+	// 4.运行Canny算子
+	Canny(edge, edge, 3, 9, 3);
+
+	// 5.将dst内的所有元素设置为0
+	dst = Scalar::all(0);
+
+	// 6.使用Canny算子输出的边缘图edge作为掩码(必须是灰度图)，来将原图src拷贝到目标图dst中
+	src1.copyTo(dst, edge);
+
+	// 7.显示效果图
+	imshow("【效果图】灰度Canny边缘检测", edge);
+	imshow("【效果图】彩色Canny边缘检测", dst);
+
+	waitKey(0);
+
+	return 0;
+}
